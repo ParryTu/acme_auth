@@ -57,6 +57,7 @@
           super();
           this.state = {
             auth: {},
+            notes: [],
           };
           this.signIn = this.signIn.bind(this);
           this.logout = this.logout.bind(this);
@@ -73,7 +74,19 @@
                 authorization: token,
               },
             });
-            this.setState({ auth: response.data });
+            // let byTokenUser = byToken(token);
+            const note = await axios.get(
+              `/api/users/${response.data.id}/notes`,
+              {
+                headers: { authorization: token },
+              }
+            );
+
+            this.setState({
+              auth: response.data,
+              notes: note,
+            });
+            console.log(this.state);
           }
         }
         componentDidMount() {
@@ -87,6 +100,7 @@
         }
         render() {
           const { auth } = this.state;
+          console.log(this.state);
           const { signIn, logout } = this;
           if (!auth.id) {
             return <SignIn signIn={signIn} />;
@@ -94,6 +108,11 @@
             return (
               <div>
                 Welcome {auth.username}
+                <div>
+                  {this.state.notes.data.map((x) => (
+                    <h2 key={x.id}>{x.text}</h2>
+                  ))}
+                </div>
                 <button onClick={logout}>Logout</button>
               </div>
             );
